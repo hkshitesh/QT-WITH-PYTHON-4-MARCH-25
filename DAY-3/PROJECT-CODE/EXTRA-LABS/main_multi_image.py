@@ -35,7 +35,7 @@ class MultiFolderImageRotator(QWidget):
         self.labels = [QLabel(f"Label {i+1}") for i in range(4)]
         for label in self.labels:
             label.setAlignment(Qt.AlignCenter)
-            label.setFixedSize(100, 100)
+            label.setFixedSize(100, 50)
             label.setStyleSheet("border: 2px solid black; padding: 5px;")
             self.layout.addWidget(label)
 
@@ -102,8 +102,9 @@ class MultiFolderImageRotator(QWidget):
 
     def display_image(self, label_index, pixmap):
         """Updates the QLabel with the loaded image."""
-        self.labels[label_index].setPixmap(pixmap)
-        self.labels[label_index].setScaledContents(True)
+        scaled_pixmap = pixmap.scaled(self.labels[label_index].size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.labels[label_index].setPixmap(scaled_pixmap)
+
 
 
 if __name__ == "__main__":
