@@ -10,3 +10,6 @@
 
 ![image](https://github.com/user-attachments/assets/c0c9662b-5826-464f-a1af-6b6f8c2703e5)
 
+## Day-3 Final Quiz Leadboard
+
+![image](https://github.com/user-attachments/assets/9daa9004-6f9b-4a87-81e6-35c47ca43976)
