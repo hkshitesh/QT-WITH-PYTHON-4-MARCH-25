@@ -1,0 +1,72 @@
+import sys
+import time
+import random
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QTextEdit
+from PySide6.QtCore import Qt, QThread, Signal
+
+# Shared variables (causing race conditions)
+counter = 0
+log_messages = []
+
+
+class WorkerThread(QThread):
+    update_signal = Signal(int, str)  # Signal to update counter and log
+
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+
+    def run(self):
+        global counter, log_messages
+        for _ in range(5):
+            temp = counter  # Read the counter value
+            time.sleep(random.uniform(0.1, 0.5))  # Simulate processing delay
+            counter = temp + 1  # Increment (RACE CONDITION!)
+            log_messages.append(f"{self.name} incremented counter to {counter}")
+            self.update_signal.emit(counter, log_messages[-1])
+
+
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Race Condition Demo - Incorrect")
+        self.setGeometry(200, 200, 400, 300)
+
+        self.counter_label = QLabel("Counter: 0")
+        self.counter_label.setAlignment(Qt.AlignCenter)
+
+        self.log_text = QTextEdit()
+        self.log_text.setReadOnly(True)
+
+        self.start_button = QPushButton("Start Threads")
+        self.start_button.clicked.connect(self.start_threads)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.counter_label)
+        layout.addWidget(self.log_text)
+        layout.addWidget(self.start_button)
+        self.setLayout(layout)
+
+    def start_threads(self):
+        """Start two threads that modify shared resources"""
+        self.thread1 = WorkerThread("Thread-1")
+        self.thread2 = WorkerThread("Thread-2")
+
+        self.thread1.update_signal.connect(self.update_ui)
+        self.thread2.update_signal.connect(self.update_ui)
+
+        self.thread1.start()
+        self.thread2.start()
+
+    def update_ui(self, count, log_msg):
+        """Update UI with counter and log messages"""
+        self.counter_label.setText(f"Counter: {count}")
+        self.log_text.append(log_msg)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
